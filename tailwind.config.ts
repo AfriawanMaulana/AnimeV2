@@ -8,6 +8,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sigmar: ["Sigmar", "cursive"],
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",

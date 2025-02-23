@@ -1,101 +1,105 @@
+"use client"
+import axios from "axios";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
+
+// components
+import Loading from "./search/[anime]/loading";
+
+
+interface Anime {
+  results: [{
+    title: string;
+    url: string;
+    status: string;
+    type: string;
+    image: Base64URLString;
+  }],
+  pagination: {
+    currentPage: number;
+    hasPrevPage: boolean;
+    hasNextPage: boolean;
+    prevPageUrl: string;
+    nextPageUrl: string;
+  }
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [ anime, setAnime ] = useState<Anime | null>(null);
+  const [ loading, setLoading ] = useState(true);
+  const [ page, setPage ] = useState(1)
+  // const [ currentPage, setCurrentPage ] = useState(page)
+  const API = "https://api.i-as.dev/api/animev2?page=";
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    const fetchApi = async () => {
+     const response = await axios.get(API + page);
+     if (response.status === 200) {
+      setAnime(response.data);
+      setLoading(false);
+     }
+    }
+    fetchApi();
+  }, [page, loading])
+
+  // Scroll to Top
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });  
+  }
+
+  // Handle Previous Page Button
+  const handlePrev = () => {
+    if (page <= 1) return
+    scrollToTop();
+    setPage(page - 1);
+    setLoading(true)
+  }
+
+  // Handle Next Page Button
+  const handleNext = () => {
+    if (page >= 1) {
+      scrollToTop()
+      setPage(page + 1);
+      setLoading(true)
+    }
+  }
+
+  
+  
+  return (
+    <>
+      <section className="my-10">
+        {!loading ? (
+          <div className="flex flex-wrap gap-4 items-center justify-center">
+            {anime?.results.map((item, index) => {
+              return (
+                <Link href={`/detail/${item.title.slice(0, 7).toLowerCase().split(/[ ]/).join("-").split(/[:`".!,“()]/).join("")}`} key={index}
+                  className="relative cursor-pointer overflow-hidden rounded-xl border border-white/20 shadow-md shadow-white/20">
+                  <Image 
+                    src={item.image} 
+                    alt={item.title} 
+                    height={200} 
+                    width={200} 
+                    loading="lazy"
+                    className="hover:scale-105 object-cover w-[200px] h-[250px] rounded-xl border border-white/20 shadow-md shadow-white/20"
+                  />
+                  <h1 className="absolute bottom-0 p-2 font-semibold text-sm w-full h-10 bg-black/70">
+                    {item.title.slice(0, 20)}...
+                  </h1>
+                </Link>
+              )
+            })}
+          </div>
+        ) : <Loading />}
+      </section>
+      {!loading ? (
+        <div className="flex w-full items-center justify-center gap-4">
+          <button onClick={handlePrev} className={page <= 1 ? 'hidden' : ''}>Prev</button>
+          <p>{page}</p>
+          <button onClick={handleNext} className="nextBtn">Next</button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+      ): null}
+    </>
+  )
 }
