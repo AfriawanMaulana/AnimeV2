@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "AnimeStation",
-  description: "the best place to watch anime",
+  description: "animestation is the best place to watch anime",
 };
 
 export default function RootLayout({
